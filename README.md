@@ -56,6 +56,8 @@ Invoke-RestMethod http://localhost:8080/actuator/info
 | `GET /test` | `{"version":"0.0.1-SNAPSHOT"}` |
 | `GET /actuator/health` | `{"status":"UP"}` |
 | `GET /actuator/info` | Build metadata, including the project version |
+| `GET /docs` | Swagger UI for exploring the API |
+| `GET /v3/api-docs` | OpenAPI 3 JSON specification |
 
 The version comes from `pom.xml` via the Maven `build-info` goal, not a hardcoded
 controller value. Run through Maven or build the JAR first so this metadata exists.
