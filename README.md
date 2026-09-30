@@ -1,6 +1,6 @@
 # Payments API
 
-Spring Boot 4.1.0, Java 21 and Maven. This initial scaffold has no payment operations yet.
+Spring Boot 4.1.0, Java 21 and Maven. Payment operations are stubbed with an in-memory store.
 
 ## Prerequisites
 
@@ -60,6 +60,27 @@ Invoke-RestMethod http://localhost:8080/actuator/info
 The version comes from `pom.xml` via the Maven `build-info` goal, not a hardcoded
 controller value. Run through Maven or build the JAR first so this metadata exists.
 
+## Payments API (stub)
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `POST` | `/api/payments` | Create a payment (`201 Created`, status `PENDING`) |
+| `GET` | `/api/payments` | List payments |
+| `POST` | `/api/payments/{id}/cancel` | Cancel a payment (`404` if unknown) |
+
+Payment fields: `id`, `customerId`, `productId`, `amount`, `currency`, `method`
+(`CARD`, `BANK_TRANSFER`, `WALLET`), `status` (`PENDING`, `COMPLETED`, `CANCELLED`)
+and `createdAt`. Invalid create requests return `400`.
+
+```powershell
+$body = '{"customerId":"cust-1","productId":"sku-42","amount":49.99,"currency":"USD","method":"CARD"}'
+$payment = Invoke-RestMethod -Method Post http://localhost:8080/api/payments -ContentType application/json -Body $body
+Invoke-RestMethod http://localhost:8080/api/payments
+Invoke-RestMethod -Method Post "http://localhost:8080/api/payments/$($payment.id)/cancel"
+```
+
+Data is held in memory and is lost when the application restarts.
+
 ## Build and run with Docker
 
 ```powershell
@@ -79,7 +100,8 @@ host port with `-p 127.0.0.1:8081:8080` and use `http://localhost:8081`.
 
 ## Scope
 
-This is a local-development scaffold, not a production payment service. No
-payment processing, persistence, authentication, or authorization is implemented.
+This is a local-development scaffold, not a production payment service. The
+payment endpoints are stubs: no real payment processing, persistence,
+authentication, or authorization is implemented.
 Only the Actuator `health` and `info` endpoints are exposed. Do not use this
 scaffold to accept real payment data.
