@@ -62,6 +62,8 @@ Invoke-RestMethod 'http://localhost:8080/actuator/metrics/http.server.requests?t
 | `GET /actuator/health/readiness` | Readiness probe (`{"status":"UP"}`) |
 | `GET /actuator/metrics` | Available payment invocation meter names |
 | `GET /actuator/metrics/http.server.requests?tag=uri:/api/payments` | Counts and durations for requests to the payment listing/creation route (after a request) |
+| `GET /docs` | Swagger UI for exploring the API |
+| `GET /v3/api-docs` | OpenAPI 3 JSON specification |
 
 Invoke a payment route before querying its metrics; only `http.server.requests`
 for `/api/payments` and routes beneath it are recorded. Query other payment
