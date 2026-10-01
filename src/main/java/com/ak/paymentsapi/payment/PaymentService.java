@@ -21,6 +21,13 @@ public class PaymentService {
 
 	private final Map<UUID, Payment> payments = new ConcurrentHashMap<>();
 
+	/**
+	 * Creates and stores a payment in the pending state.
+	 *
+	 * @param request payment details to validate and persist
+	 * @return the newly created payment
+	 * @throws ResponseStatusException if the request is invalid
+	 */
 	public Payment create(CreatePaymentRequest request) {
 		validate(request);
 		Payment payment = new Payment(
@@ -36,12 +43,24 @@ public class PaymentService {
 		return payment;
 	}
 
+	/**
+	 * Lists all stored payments in creation order.
+	 *
+	 * @return an immutable list of stored payments
+	 */
 	public List<Payment> list() {
 		return payments.values().stream()
 				.sorted(Comparator.comparing(Payment::createdAt))
 				.toList();
 	}
 
+	/**
+	 * Marks a payment as cancelled.
+	 *
+	 * @param id identifier of the payment to cancel
+	 * @return the updated payment
+	 * @throws ResponseStatusException if the payment is missing or completed
+	 */
 	public Payment cancel(UUID id) {
 		Payment updated = payments.computeIfPresent(id, (key, payment) -> {
 			if (payment.status() == PaymentStatus.COMPLETED) {
