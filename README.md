@@ -48,19 +48,29 @@ In another PowerShell terminal:
 ```powershell
 Invoke-RestMethod http://localhost:8080/test
 Invoke-RestMethod http://localhost:8080/actuator/health
-Invoke-RestMethod http://localhost:8080/actuator/info
+Invoke-RestMethod http://localhost:8080/actuator/health/liveness
+Invoke-RestMethod http://localhost:8080/actuator/health/readiness
+Invoke-RestMethod http://localhost:8080/api/payments
+Invoke-RestMethod 'http://localhost:8080/actuator/metrics/http.server.requests?tag=uri:/api/payments'
 ```
 
 | Endpoint | Response |
 | --- | --- |
 | `GET /test` | `{"version":"0.0.1-SNAPSHOT"}` |
 | `GET /actuator/health` | `{"status":"UP"}` |
-| `GET /actuator/info` | Build metadata, including the project version |
+| `GET /actuator/health/liveness` | Liveness probe (`{"status":"UP"}`) |
+| `GET /actuator/health/readiness` | Readiness probe (`{"status":"UP"}`) |
+| `GET /actuator/metrics` | Available payment invocation meter names |
+| `GET /actuator/metrics/http.server.requests?tag=uri:/api/payments` | Counts and durations for requests to the payment listing/creation route (after a request) |
 | `GET /docs` | Swagger UI for exploring the API |
 | `GET /v3/api-docs` | OpenAPI 3 JSON specification |
 
-The version comes from `pom.xml` via the Maven `build-info` goal, not a hardcoded
-controller value. Run through Maven or build the JAR first so this metadata exists.
+Invoke a payment route before querying its metrics; only `http.server.requests`
+for `/api/payments` and routes beneath it are recorded. Query other payment
+routes using their normalized URI tag (for example,
+`uri:/api/payments/{id}/cancel`). The version on `/test` comes from `pom.xml`
+via the Maven `build-info` goal, not a hardcoded controller value. Run through
+Maven or build the JAR first so this metadata exists.
 
 ## Payments API (stub)
 
@@ -105,5 +115,8 @@ host port with `-p 127.0.0.1:8081:8080` and use `http://localhost:8081`.
 This is a local-development scaffold, not a production payment service. The
 payment endpoints are stubs: no real payment processing, persistence,
 authentication, or authorization is implemented.
-Only the Actuator `health` and `info` endpoints are exposed. Do not use this
-scaffold to accept real payment data.
+Only the Actuator `health` (including liveness and readiness) and `metrics`
+endpoints are enabled and exposed. Other Actuator endpoints, including `info`,
+are unavailable. The metrics endpoint has no authentication in this scaffold:
+restrict network access to it in a real deployment. Do not use this scaffold to
+accept real payment data.
