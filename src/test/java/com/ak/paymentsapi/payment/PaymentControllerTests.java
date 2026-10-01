@@ -11,9 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,6 +24,7 @@ import com.jayway.jsonpath.JsonPath;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ExtendWith(OutputCaptureExtension.class)
 class PaymentControllerTests {
 
 	private static final String VALID_PAYMENT = """
@@ -59,6 +63,21 @@ class PaymentControllerTests {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(VALID_PAYMENT.replace("49.99", "0")))
 				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void createLogsOperationWithoutSensitivePaymentData(CapturedOutput output) throws Exception {
+		mockMvc.perform(post("/api/payments")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content("""
+								{"customerId":"customer-pii-marker","productId":"sku-42","amount":49.99,
+								"currency":"usd","method":"CARD","pan":"4111111111111111"}
+								"""))
+				.andExpect(status().isCreated());
+
+		org.assertj.core.api.Assertions.assertThat(output)
+				.contains("Creating payment", "Payment created")
+				.doesNotContain("customer-pii-marker", "4111111111111111");
 	}
 
 	@Test
